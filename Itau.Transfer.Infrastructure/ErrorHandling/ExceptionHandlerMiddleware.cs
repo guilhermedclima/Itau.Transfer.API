@@ -3,6 +3,7 @@ using Itau.Transfer.Domain.Exception;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Sentry;
 using System.Net;
 
 namespace Itau.Transfer.Infrastructure.ErrorHandling;
@@ -38,12 +39,14 @@ public class ExceptionHandlerMiddleware
                 return CreateTextResponse(context, HttpStatusCode.NotFound, exception.Message);
 
             case BadRequestException ex:
+                SentrySdk.CaptureException(exception);
                 if (ex.Errors.Any())
                     return CreateValidationFailureResponse(context, HttpStatusCode.BadRequest, ex.Errors);
 
                 return CreateTextResponse(context, HttpStatusCode.BadRequest, exception.Message);
 
             case HttpClientRequestException _:
+                SentrySdk.CaptureException(exception);
                 return CreateTextResponse(context, HttpStatusCode.GatewayTimeout, exception.Message);
 
             default:
