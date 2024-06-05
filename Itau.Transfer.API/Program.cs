@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Extensions.Http;
 using Sentry.Profiling;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +71,13 @@ builder.WebHost.UseSentry(o =>
         TimeSpan.FromMilliseconds(500)
     ));
 });
+
+builder.Host.UseSerilog((ctx, lc) => lc
+    .WriteTo.Console(LogEventLevel.Debug)
+    .WriteTo.File("log.txt",
+        LogEventLevel.Warning,
+        rollingInterval: RollingInterval.Day));
+
 var app = builder.Build();
 
 DbMigrator.Migrate(app);
