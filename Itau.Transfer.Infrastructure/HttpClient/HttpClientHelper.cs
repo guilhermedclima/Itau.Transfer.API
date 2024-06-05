@@ -1,9 +1,9 @@
-﻿using System.Net;
-using System.Text.Json;
-using System.Text;
-using Itau.Transfer.Domain.Exception;
+﻿using Itau.Transfer.Domain.Exception;
 using Itau.Transfer.Infrastructure.Interfaces.Helpers;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Text;
+using System.Text.Json;
 
 namespace Itau.Transfer.Infrastructure.HttpClient;
 
@@ -17,7 +17,7 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
             var httpClient = clientFactory.CreateClient(clientName);
 
             var response = await httpClient.GetAsync(path);
-            if(response.StatusCode == HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
                 return default(T);
             response.EnsureSuccessStatusCode();
 
@@ -33,7 +33,6 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
             logger.LogError(e, e.Message);
             throw new HttpClientRequestException(e.Message);
         }
-
     }
 
     public async Task PostAsync<T>(string clientName, string path, T body, CancellationToken ct)
@@ -48,14 +47,12 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
             var response = await httpClient.PostAsync(path, httpContent, ct);
             response.EnsureSuccessStatusCode();
             await response.Content.ReadAsStringAsync(ct);
-
         }
         catch (HttpRequestException e)
         {
             logger.LogError(e, e.Message);
             throw new HttpClientRequestException(e.Message);
         }
-
     }
 
     public async Task PutAsync<T>(string clientName, string path, T body, CancellationToken ct)
@@ -68,7 +65,6 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
             {
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-
             });
             var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             var response = await httpClient.PutAsync(path, httpContent, ct);
@@ -81,7 +77,5 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
             logger.LogError(e, e.Message);
             throw new HttpClientRequestException(e.Message);
         }
-
     }
-
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Itau.Transfer.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240605003653_initial")]
-    partial class initial
+    [Migration("20240605125409_initial-migration")]
+    partial class initialmigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,29 @@ namespace Itau.Transfer.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Itau.Transfer.Domain.Dto.TransferenciaContaDto", b =>
+            modelBuilder.Entity("Itau.Transfer.Domain.Entities.Transferencia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IdCliente")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TransferenciaContasId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransferenciaContasId");
+
+                    b.ToTable("Transferencias");
+                });
+
+            modelBuilder.Entity("Itau.Transfer.Domain.Entities.TransferenciaContas", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,40 +61,18 @@ namespace Itau.Transfer.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TransferenciaContaDto");
+                    b.ToTable("TransferenciaContas");
                 });
 
             modelBuilder.Entity("Itau.Transfer.Domain.Entities.Transferencia", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ContaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IdCliente")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContaId");
-
-                    b.ToTable("Transferencias");
-                });
-
-            modelBuilder.Entity("Itau.Transfer.Domain.Entities.Transferencia", b =>
-                {
-                    b.HasOne("Itau.Transfer.Domain.Dto.TransferenciaContaDto", "Conta")
+                    b.HasOne("Itau.Transfer.Domain.Entities.TransferenciaContas", "TransferenciaContas")
                         .WithMany()
-                        .HasForeignKey("ContaId")
+                        .HasForeignKey("TransferenciaContasId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Conta");
+                    b.Navigation("TransferenciaContas");
                 });
 #pragma warning restore 612, 618
         }

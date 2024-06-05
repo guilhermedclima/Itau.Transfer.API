@@ -1,11 +1,8 @@
 ﻿using Itau.Transfer.Infrastructure.HttpClient;
-using Itau.Transfer.Infrastructure.Interfaces;
 using Itau.Transfer.Infrastructure.Interfaces.Helpers;
 using Itau.Transfer.Infrastructure.Interfaces.Repositories;
 using Itau.Transfer.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using Polly.Extensions.Http;
 
 namespace Itau.Transfer.Application.Config
 {
@@ -16,7 +13,7 @@ namespace Itau.Transfer.Application.Config
             services.AddScoped<IHttpClientHelper, HttpClientHelper>();
             services.AddScoped<ITransferenciaRepository, TransferenciaRepository>();
             services.AddScoped<IRepositoryBase, RepositoryBase>();
-            
+
             return services;
         }
     }

@@ -1,18 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Itau.Transfer.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class initialmigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "TransferenciaContaDto",
+                name: "TransferenciaContas",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -21,7 +20,7 @@ namespace Itau.Transfer.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransferenciaContaDto", x => x.Id);
+                    table.PrimaryKey("PK_TransferenciaContas", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -31,23 +30,23 @@ namespace Itau.Transfer.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IdCliente = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ContaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    TransferenciaContasId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transferencias", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Transferencias_TransferenciaContaDto_ContaId",
-                        column: x => x.ContaId,
-                        principalTable: "TransferenciaContaDto",
+                        name: "FK_Transferencias_TransferenciaContas_TransferenciaContasId",
+                        column: x => x.TransferenciaContasId,
+                        principalTable: "TransferenciaContas",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transferencias_ContaId",
+                name: "IX_Transferencias_TransferenciaContasId",
                 table: "Transferencias",
-                column: "ContaId");
+                column: "TransferenciaContasId");
         }
 
         /// <inheritdoc />
@@ -57,7 +56,7 @@ namespace Itau.Transfer.Infrastructure.Migrations
                 name: "Transferencias");
 
             migrationBuilder.DropTable(
-                name: "TransferenciaContaDto");
+                name: "TransferenciaContas");
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using Itau.Transfer.Domain.Entities;
+﻿using Itau.Transfer.Domain.Dto;
 
 namespace Itau.Transfer.Application.Interfaces.Services;
 
 public interface IClienteService
 {
-    Task<Cliente> GetClienteAsync(Guid id);
+    Task<ClienteDto> GetClienteAsync(Guid id);
 }

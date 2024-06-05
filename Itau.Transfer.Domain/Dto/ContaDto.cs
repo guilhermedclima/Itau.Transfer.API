@@ -1,16 +1,17 @@
-﻿namespace Itau.Transfer.Domain.Entities;
-public class Conta
+﻿namespace Itau.Transfer.Domain.Dto;
+
+public class ContaDto
 {
     public Guid Id { get; set; }
     public decimal Saldo { get; set; }
     public bool Ativo { get; set; }
     public decimal LimiteDiario { get; set; }
 
-    public Conta()
+    public ContaDto()
     {
     }
 
-    public Conta(Guid id, decimal saldo, bool ativo, decimal limiteDiario)
+    public ContaDto(Guid id, decimal saldo, bool ativo, decimal limiteDiario)
     {
         Id = id;
         Saldo = saldo;

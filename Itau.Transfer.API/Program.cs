@@ -2,7 +2,6 @@ using Itau.Transfer.Application.Config;
 using Itau.Transfer.Infrastructure.Context;
 using Itau.Transfer.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -26,9 +25,9 @@ builder.Services.AddDbContext<AppDbContext>(dbContextOptions =>
                 errorNumbersToAdd: null);
         });
 
-   
     dbContextOptions.EnableSensitiveDataLogging(true);
 });
+
 builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddress = new Uri("http://localhost:9090/"); })
     .AddPolicyHandler((provider, request) =>
     {
@@ -53,7 +52,6 @@ builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddr
                 },
                 () => { logger.LogInformation("Circuit breaker reset."); });
     });
-
 
 var app = builder.Build();
 

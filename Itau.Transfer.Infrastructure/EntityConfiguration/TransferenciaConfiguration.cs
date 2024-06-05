@@ -9,5 +9,6 @@ public class TransferenciaConfiguration : IEntityTypeConfiguration<Transferencia
     public void Configure(EntityTypeBuilder<Transferencia> builder)
     {
         builder.HasKey(s => s.Id);
+        builder.HasOne(s => s.TransferenciaContas);
     }
 }

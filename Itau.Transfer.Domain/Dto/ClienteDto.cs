@@ -1,16 +1,17 @@
-﻿namespace Itau.Transfer.Domain.Entities;
-public class Cliente
+﻿namespace Itau.Transfer.Domain.Dto;
+
+public class ClienteDto
 {
     public Guid Id { get; set; }
     public string Nome { get; set; }
     public string Telefone { get; set; }
     public string TipoPessoa { get; set; }
 
-    public Cliente()
+    public ClienteDto()
     {
     }
 
-    public Cliente(Guid id, string nome, string telefone, string tipoPessoa)
+    public ClienteDto(Guid id, string nome, string telefone, string tipoPessoa)
     {
         Id = id;
         Nome = nome;

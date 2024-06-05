@@ -1,5 +1,4 @@
 ﻿using Itau.Transfer.Infrastructure.Context;
-using Itau.Transfer.Infrastructure.Interfaces;
 using Itau.Transfer.Infrastructure.Interfaces.Repositories;
 
 namespace Itau.Transfer.Infrastructure.Repositories;

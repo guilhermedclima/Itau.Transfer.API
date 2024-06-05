@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Net.Http;
-using System.Net;
-using FluentValidation.Results;
+﻿using FluentValidation.Results;
 using Itau.Transfer.Domain.Exception;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace Itau.Transfer.Infrastructure.ErrorHandling;
 
@@ -43,6 +42,7 @@ public class ExceptionHandlerMiddleware
                     return CreateValidationFailureResponse(context, HttpStatusCode.BadRequest, ex.Errors);
 
                 return CreateTextResponse(context, HttpStatusCode.BadRequest, exception.Message);
+
             case HttpClientRequestException _:
                 return CreateTextResponse(context, HttpStatusCode.GatewayTimeout, exception.Message);
 
