@@ -27,7 +27,7 @@ public class HttpClientHelperTests
     {
         // Arrange
         var clientName = "TestClient";
-        var path = "http://www.test.com c/path";
+        var path = "http://www.test.com/path";
         var expectedData = new { Name = "Test" };
         var responseContent = JsonSerializer.Serialize(expectedData);
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
