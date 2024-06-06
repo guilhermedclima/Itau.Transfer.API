@@ -9,6 +9,5 @@ public class TransferenciaRepository(AppDbContext context) : ITransferenciaRepos
     public async Task InserirTransferenciaAsync(Transferencia transferencia)
     {
         await context.Transferencias.AddAsync(transferencia);
-        await context.SaveChangesAsync();
     }
 }

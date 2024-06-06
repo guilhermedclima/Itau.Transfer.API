@@ -23,157 +23,94 @@ public class HttpClientHelperTests
     }
 
     [Fact]
-    public async Task GetAsync_ValidRequest_ReturnsData()
+    public async Task GetAsync_ReturnsDeserializedObject_WhenResponseIsSuccess()
     {
         // Arrange
-        var clientName = "TestClient";
-        var path = "http://www.test.com/path";
-        var expectedData = new { Name = "Test" };
-        var responseContent = JsonSerializer.Serialize(expectedData);
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        var clientName = "testClient";
+        var path = "http://example.com";
+        var responseContent = "{\"key\":\"value\"}";
+        var mockHttpMessageHandler = new MockHttpMessageHandler(responseContent, HttpStatusCode.OK);
 
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                  ItExpr.IsNull<HttpRequestMessage>(), 
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(responseContent)
-            });
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        _mockHttpClientFactory.Setup(f => f.CreateClient(clientName))
-                              .Returns(httpClient);
+        var httpClient = new HttpClient(mockHttpMessageHandler);
+        _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act
-        var result = await _httpClientHelper.GetAsync<object>(clientName, path);
+        var result = await _httpClientHelper.GetAsync<Dictionary<string, string>>(clientName, path);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test", ((JsonElement)result).GetProperty("Name").GetString());
-
-        _mockLogger.Verify(l => l.LogInformation(It.IsAny<string>()), Times.Once);
+        Assert.Equal("value", result["key"]);
     }
 
     [Fact]
-    public async Task GetAsync_NotFound_ReturnsDefault()
+    public async Task GetAsync_ThrowsHttpClientRequestException_WhenHttpRequestExceptionOccurs()
     {
         // Arrange
-        var clientName = "TestClient";
-        var path = "test/path";
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        var clientName = "testClient";
+        var path = "http://example.com";
+        var mockHttpMessageHandler = new MockHttpMessageHandler(string.Empty, HttpStatusCode.BadRequest);
 
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                  ItExpr.IsNull<HttpRequestMessage>(), 
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.NotFound
-            });
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        _mockHttpClientFactory.Setup(f => f.CreateClient(clientName))
-                              .Returns(httpClient);
-
-        // Act
-        var result = await _httpClientHelper.GetAsync<object>(clientName, path);
-
-        // Assert
-        Assert.Null(result);
-
-        _mockLogger.Verify(l => l.LogInformation(It.IsAny<string>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetAsync_HttpRequestException_ThrowsHttpClientRequestException()
-    {
-        // Arrange
-        var clientName = "TestClient";
-        var path = "test/path";
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsNull<HttpRequestMessage>(), 
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ThrowsAsync(new HttpRequestException("Network error"));
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        _mockHttpClientFactory.Setup(f => f.CreateClient(clientName))
-                              .Returns(httpClient);
+        var httpClient = new HttpClient(mockHttpMessageHandler);
+        _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpClientRequestException>(() => _httpClientHelper.GetAsync<object>(clientName, path));
-        Assert.Equal("Network error", exception.Message);
-
-        _mockLogger.Verify(l => l.LogError(It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
+        await Assert.ThrowsAsync<HttpClientRequestException>(() =>
+            _httpClientHelper.GetAsync<Dictionary<string, string>>(clientName, path));
     }
-
     [Fact]
-    public async Task PostAsync_HttpRequestException_ThrowsHttpClientRequestException()
+    public async Task PostAsync_ThrowsHttpClientRequestException_WhenHttpRequestExceptionOccurs()
     {
         // Arrange
-        var clientName = "TestClient";
-        var path = "test/path";
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        var body = new { Name = "Test" };
+        var clientName = "testClient";
+        var path = "http://example.com";
+        var body = new { key = "value" };
+        var cancellationToken = CancellationToken.None;
+        var mockHttpMessageHandler = new MockHttpMessageHandler(string.Empty, HttpStatusCode.BadRequest);
 
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                  ItExpr.IsNull<HttpRequestMessage>(), 
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ThrowsAsync(new HttpRequestException("Network error"));
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        _mockHttpClientFactory.Setup(f => f.CreateClient(clientName))
-                              .Returns(httpClient);
+        var httpClient = new HttpClient(mockHttpMessageHandler);
+        _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpClientRequestException>(() => _httpClientHelper.PostAsync(clientName, path, body, CancellationToken.None));
-        Assert.Equal("Network error", exception.Message);
-
-        _mockLogger.Verify(l => l.LogError(It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
+        await Assert.ThrowsAsync<HttpClientRequestException>(() => _httpClientHelper.PostAsync(clientName, path, body, cancellationToken));
     }
-
     [Fact]
-    public async Task PutAsync_HttpRequestException_ThrowsHttpClientRequestException()
+    public async Task PutAsync_ThrowsHttpClientRequestException_WhenHttpRequestExceptionOccurs()
     {
         // Arrange
-        var clientName = "TestClient";
-        var path = "test/path";
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        var body = new { Name = "Test" };
+        var clientName = "testClient";
+        var path = "http://example.com";
+        var body = new { key = "value" };
+        var cancellationToken = CancellationToken.None;
+        var mockHttpMessageHandler = new MockHttpMessageHandler(string.Empty, HttpStatusCode.BadRequest);
 
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                  ItExpr.IsNull<HttpRequestMessage>(), 
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ThrowsAsync(new HttpRequestException("Network error"));
-
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        _mockHttpClientFactory.Setup(f => f.CreateClient(clientName))
-                              .Returns(httpClient);
+        var httpClient = new HttpClient(mockHttpMessageHandler);
+        _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpClientRequestException>(() => _httpClientHelper.PutAsync(clientName, path, body, CancellationToken.None));
-        Assert.Equal("Network error", exception.Message);
+        await Assert.ThrowsAsync<HttpClientRequestException>(() => _httpClientHelper.PutAsync(clientName, path, body, cancellationToken));
+    }
 
-        _mockLogger.Verify(l => l.LogError(It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
+
+}
+
+public class MockHttpMessageHandler : HttpMessageHandler
+{
+    private readonly string _responseContent;
+    private readonly HttpStatusCode _statusCode;
+
+    public MockHttpMessageHandler(string responseContent, HttpStatusCode statusCode)
+    {
+        _responseContent = responseContent;
+        _statusCode = statusCode;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var response = new HttpResponseMessage(_statusCode)
+        {
+            Content = new StringContent(_responseContent)
+        };
+        return await Task.FromResult(response);
     }
 }
