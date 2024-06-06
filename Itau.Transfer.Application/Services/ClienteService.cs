@@ -7,9 +7,9 @@ namespace Itau.Transfer.Application.Services;
 
 public class ClienteService(IHttpClientHelper clientHelper, ILogger<ClienteService> logger) : IClienteService
 {
-    public async Task<ClienteDto> GetClienteAsync(Guid id)
+    public async Task<ClienteDto?> GetClienteAsync(Guid id)
     {
-        logger.LogInformation($"Getting Cliente {id}");
+        logger.LogInformation($"Obtendo Cliente {id}");
         return await clientHelper.GetAsync<ClienteDto>("ClientesEContasApi", $"clientes/{id}");
     }
 }

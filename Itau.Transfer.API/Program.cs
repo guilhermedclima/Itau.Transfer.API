@@ -10,13 +10,16 @@ using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
-
+//Inicialização da camada de application e infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Inicialização do dbContext para o EF
 builder.Services.AddDbContext<AppDbContext>(dbContextOptions =>
 {
     dbContextOptions.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"),
@@ -32,7 +35,8 @@ builder.Services.AddDbContext<AppDbContext>(dbContextOptions =>
     dbContextOptions.EnableSensitiveDataLogging(true);
 });
 
-builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddress = new Uri("http://localhost:9090/"); })
+//Inicialização do HttpClient para comunicação com a API de Clientes e Contas e Polly para resiliencia
+builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ApiUrl")!); })
     .AddPolicyHandler((provider, request) =>
     {
         var logger = provider.GetRequiredService<ILogger<Program>>();
@@ -41,7 +45,7 @@ builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddr
                 (outcome, timespan, retryAttempt, context) =>
                 {
                     logger.LogWarning(
-                        $"Delaying for {timespan.TotalSeconds} seconds, then making retry {retryAttempt}.");
+                        $"Tentando novamente por {timespan.TotalSeconds} segundos, fazendo a tentativa {retryAttempt}.");
                 });
     })
     .AddPolicyHandler((provider, request) =>
@@ -52,18 +56,21 @@ builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddr
                 (outcome, timespan) =>
                 {
                     logger.LogWarning(
-                        $"Circuit breaker opened for {timespan.TotalSeconds} seconds due to {outcome.Exception?.Message}");
+                        $"Circuit breaker aberto por {timespan.TotalSeconds} segundos devido a {outcome.Exception?.Message}");
                 },
-                () => { logger.LogInformation("Circuit breaker reset."); });
+                () => { logger.LogInformation("Circuit breaker resetado."); });
     });
+
+//Inicialização do AutoMapper
 builder.Services.AddAutoMapper((_, config) =>
 {
     config.AddCollectionMappers();
 }, AppDomain.CurrentDomain.GetAssemblies());
 
+//Inicialização do Sentry e Sentry Profiling
 builder.WebHost.UseSentry(o =>
 {
-    o.Dsn = "https://cbce790f68512d735f9138054e796625@o4507379548094464.ingest.us.sentry.io/4507379559301120";
+    o.Dsn = builder.Configuration.GetValue<string>("SentryDsn");
     o.Debug = true;
     o.TracesSampleRate = 1.0;
     o.ProfilesSampleRate = 1.0;
@@ -72,6 +79,7 @@ builder.WebHost.UseSentry(o =>
     ));
 });
 
+//Inicialização do Serilog
 builder.Host.UseSerilog((ctx, lc) => lc
     .WriteTo.Console(LogEventLevel.Debug)
     .WriteTo.File("log.txt",
@@ -80,8 +88,10 @@ builder.Host.UseSerilog((ctx, lc) => lc
 
 var app = builder.Build();
 
+//Starup do Migrator para rodar as migrations e atualizar ou criar o banco de dados.
 DbMigrator.Migrate(app);
 
+//Middleware para tratamento de exceções
 app.UseMiddleware(typeof(ExceptionHandlerMiddleware));
 
 // Configure the HTTP request pipeline.

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Itau.Transfer.Infrastructure.Context;
 
+[ExcludeFromCodeCoverage]
 public static class DbMigrator
 {
     public static void Migrate(IApplicationBuilder app)

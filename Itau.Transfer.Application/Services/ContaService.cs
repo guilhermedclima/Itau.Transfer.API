@@ -9,7 +9,7 @@ public class ContaService(IHttpClientHelper clientHelper, ILogger<ContaService> 
 {
     public async Task<ContaDto> GetContaAsync(Guid id)
     {
-        logger.LogInformation($"Getting Conta {id}");
+        logger.LogInformation($"Obtendo Conta {id}");
         return await clientHelper.GetAsync<ContaDto>("ClientesEContasApi", $"contas/{id}");
     }
 

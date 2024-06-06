@@ -4,5 +4,5 @@ namespace Itau.Transfer.Application.Interfaces.Services;
 
 public interface IClienteService
 {
-    Task<ClienteDto> GetClienteAsync(Guid id);
+    Task<ClienteDto?> GetClienteAsync(Guid id);
 }

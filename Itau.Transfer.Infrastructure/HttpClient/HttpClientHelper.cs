@@ -7,16 +7,16 @@ using System.Text.Json;
 
 namespace Itau.Transfer.Infrastructure.HttpClient;
 
-public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClientHandler> logger) : IHttpClientHelper
+public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClientHelper> logger) : IHttpClientHelper
 {
-    public async Task<T> GetAsync<T>(string clientName, string path)
+    public async Task<T?> GetAsync<T>(string clientName, string path)
     {
         try
         {
-            logger.LogInformation($"Requesting {path} from {clientName} client");
+            logger.LogInformation($"Requisitando {path} do {clientName} client");
             var httpClient = clientFactory.CreateClient(clientName);
 
-            var response = await httpClient.GetAsync(path);
+            using var response = await httpClient.GetAsync(path);
             if (response.StatusCode == HttpStatusCode.NotFound)
                 return default(T);
             response.EnsureSuccessStatusCode();
@@ -39,10 +39,10 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
     {
         try
         {
-            logger.LogInformation($"Requesting {path} from {clientName} client");
+            logger.LogInformation($"Requisitando {path} do {clientName} client");
             var httpClient = clientFactory.CreateClient(clientName);
             var jsonContent = JsonSerializer.Serialize(body);
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            using var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync(path, httpContent, ct);
             response.EnsureSuccessStatusCode();
@@ -59,14 +59,14 @@ public class HttpClientHelper(IHttpClientFactory clientFactory, ILogger<HttpClie
     {
         try
         {
-            logger.LogInformation($"Requesting {path} from {clientName} client");
+            logger.LogInformation($"Requisitando {path} do {clientName} client");
             var httpClient = clientFactory.CreateClient(clientName);
             var jsonContent = JsonSerializer.Serialize(body, new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
             });
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            using var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             var response = await httpClient.PutAsync(path, httpContent, ct);
             response.EnsureSuccessStatusCode();
 

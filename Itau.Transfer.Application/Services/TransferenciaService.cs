@@ -14,39 +14,32 @@ public class TransferenciaService(IClienteService clienteService,
 {
     public async Task<TransferenciaResponseDto> TransferenciaAsync(TransferenciaDto request, CancellationToken ct)
     {
-        try
+        await ValidateRequestAsync(request);
+
+        var cliente = await clienteService.GetClienteAsync(request.IdCliente);
+        if (cliente == null)
         {
-            await ValidateRequestAsync(request);
-
-            var cliente = await clienteService.GetClienteAsync(request.IdCliente);
-            if (cliente == null)
-            {
-                throw new BadRequestException("Cliente não encontrado");
-            }
-
-            var contaOrigem = await contaService.GetContaAsync(request.Conta.IdOrigem);
-            ContaOrigemValidators(contaOrigem, request.Valor);
-
-            var contadeDestino = await contaService.GetContaAsync(request.Conta.IdDestino);
-            ContaDestinoValidators(contadeDestino);
-
-            await UpdateSaldoAsync(request, ct);
-            await InsertTransferenciaAsync(request);
-
-            return new TransferenciaResponseDto { Id_Transferencia = request.Id };
+            throw new BadRequestException("Cliente não encontrado");
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+
+        var contaOrigem = await contaService.GetContaAsync(request.Conta.IdOrigem);
+        ContaOrigemValidators(contaOrigem, request.Valor);
+
+        var contadeDestino = await contaService.GetContaAsync(request.Conta.IdDestino);
+        ContaDestinoValidators(contadeDestino);
+
+        await UpdateSaldoAsync(request, ct);
+        await InsertTransferenciaAsync(request);
+
+        return new TransferenciaResponseDto { Id_Transferencia = request.Id };
+
     }
 
     private static void ContaDestinoValidators(ContaDto contadeDestino)
     {
         if (contadeDestino == null)
         {
-            throw new NotFoundException("Conta de destino não encontrada");
+            throw new BadRequestException("Conta de destino não encontrada");
         }
 
         if (!contadeDestino.Ativo)
@@ -81,7 +74,7 @@ public class TransferenciaService(IClienteService clienteService,
     private async Task ValidateRequestAsync(TransferenciaDto request)
     {
         var validator = new TransferenciaDtoValidator();
-        var result = validator.Validate(request);
+        var result = await validator.ValidateAsync(request);
         if (!result.IsValid)
         {
             throw new BadRequestException(result.Errors);

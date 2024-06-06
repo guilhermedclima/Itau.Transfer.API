@@ -1,9 +1,11 @@
-﻿using Itau.Transfer.Domain.Entities;
+﻿using System.Diagnostics.CodeAnalysis;
+using Itau.Transfer.Domain.Entities;
 using Itau.Transfer.Infrastructure.EntityConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Itau.Transfer.Infrastructure.Context;
 
+[ExcludeFromCodeCoverage]
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)

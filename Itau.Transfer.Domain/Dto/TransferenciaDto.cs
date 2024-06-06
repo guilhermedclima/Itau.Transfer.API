@@ -7,13 +7,4 @@ public class TransferenciaDto
     public decimal Valor { get; set; }
     public TransferenciaContaDto Conta { get; set; }
 
-    public TransferenciaDto()
-    {
-    }
-
-    public TransferenciaDto(Guid idCliente, decimal valor, TransferenciaContaDto conta)
-    {
-        IdCliente = idCliente;
-        Conta = conta;
-    }
 }

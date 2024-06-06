@@ -29,4 +29,8 @@
     <ProjectReference Include="..\Itau.Transfer.Infrastructure\Itau.Transfer.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="log20240605.txt" />
+  </ItemGroup>
+
 </Project>
