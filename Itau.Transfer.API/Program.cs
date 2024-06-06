@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AutoMapper.EquivalencyExpression;
 using Itau.Transfer.Application.Config;
 using Itau.Transfer.Infrastructure.Context;
@@ -10,7 +11,8 @@ using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
-//Inicialização da camada de application e infrastructure
+
+//Inicializaï¿½ï¿½o da camada de application e infrastructure
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
@@ -19,7 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Inicialização do dbContext para o EF
+//Inicializaï¿½ï¿½o do dbContext para o EF
 builder.Services.AddDbContext<AppDbContext>(dbContextOptions =>
 {
     dbContextOptions.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"),
@@ -35,8 +37,9 @@ builder.Services.AddDbContext<AppDbContext>(dbContextOptions =>
     dbContextOptions.EnableSensitiveDataLogging(true);
 });
 
-//Inicialização do HttpClient para comunicação com a API de Clientes e Contas e Polly para resiliencia
-builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ApiUrl")!); })
+//Inicializaï¿½ï¿½o do HttpClient para comunicaï¿½ï¿½o com a API de Clientes e Contas e Polly para resiliencia
+builder.Services.AddHttpClient("ClientesEContasApi",
+        client => { client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ApiUrl")!); })
     .AddPolicyHandler((provider, request) =>
     {
         var logger = provider.GetRequiredService<ILogger<Program>>();
@@ -61,13 +64,11 @@ builder.Services.AddHttpClient("ClientesEContasApi", client => { client.BaseAddr
                 () => { logger.LogInformation("Circuit breaker resetado."); });
     });
 
-//Inicialização do AutoMapper
-builder.Services.AddAutoMapper((_, config) =>
-{
-    config.AddCollectionMappers();
-}, AppDomain.CurrentDomain.GetAssemblies());
+//Inicializaï¿½ï¿½o do AutoMapper
+builder.Services.AddAutoMapper((_, config) => { config.AddCollectionMappers(); },
+    AppDomain.CurrentDomain.GetAssemblies());
 
-//Inicialização do Sentry e Sentry Profiling
+//Inicializaï¿½ï¿½o do Sentry e Sentry Profiling
 builder.WebHost.UseSentry(o =>
 {
     o.Dsn = builder.Configuration.GetValue<string>("SentryDsn");
@@ -79,7 +80,7 @@ builder.WebHost.UseSentry(o =>
     ));
 });
 
-//Inicialização do Serilog
+//Inicializaï¿½ï¿½o do Serilog
 builder.Host.UseSerilog((ctx, lc) => lc
     .WriteTo.Console(LogEventLevel.Debug)
     .WriteTo.File("log.txt",
@@ -91,15 +92,12 @@ var app = builder.Build();
 //Starup do Migrator para rodar as migrations e atualizar ou criar o banco de dados.
 DbMigrator.Migrate(app);
 
-//Middleware para tratamento de exceções
+//Middleware para tratamento de exceï¿½ï¿½es
 app.UseMiddleware(typeof(ExceptionHandlerMiddleware));
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
